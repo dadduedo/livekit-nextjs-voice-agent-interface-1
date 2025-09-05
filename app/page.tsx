@@ -9,6 +9,7 @@ import {
   VoiceAssistantControlBar,
   AgentState,
   DisconnectButton,
+  useTracks,
 } from "@livekit/components-react";
 import { useCallback, useEffect, useState } from "react";
 import { MediaDeviceFailure } from "livekit-client";
@@ -16,6 +17,8 @@ import type { ConnectionDetails } from "@/app/api/connection-details/route";
 import { NoAgentNotification } from "@/app/components/NoAgentNotification";
 import { CloseIcon } from "@/app/components/CloseIcon";
 import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
+import { ParticipantTile, GridLayout } from "@livekit/components-react";
+import { Track } from "livekit-client";
 
 export default function Home() {
   const [connectionDetails, updateConnectionDetails] = useState<
@@ -85,22 +88,43 @@ export default function Home() {
   );
 }
 
+function AvatarVideo() {
+  const tracks = useTracks([
+    { source: Track.Source.Camera, withPlaceholder: false },
+  ]);
+
+  return (
+    <GridLayout tracks={tracks}>
+      <ParticipantTile />
+    </GridLayout>
+  );
+}
+
 function SimpleVoiceAssistant(props: {
   onStateChange: (state: AgentState) => void;
 }) {
   const { state, audioTrack } = useVoiceAssistant();
+
   useEffect(() => {
     props.onStateChange(state);
-  }, [props, state]);
+  }, [state]);
+
   return (
-    <div className="h-[300px] max-w-[90vw] mx-auto">
-      <BarVisualizer
-        state={state}
-        barCount={5}
-        trackRef={audioTrack}
-        className="agent-visualizer"
-        options={{ minHeight: 24 }}
-      />
+    <div className="flex flex-col items-center gap-4">
+      {/* Visualizzatore audio come ora */}
+      <div className="h-[100px] max-w-[90vw] mx-auto">
+        <BarVisualizer
+          state={state}
+          barCount={5}
+          trackRef={audioTrack}
+          className="agent-visualizer"
+          options={{ minHeight: 24 }}
+        />
+      </div>
+
+      <div className="h-[400px] w-[300px] rounded-xl overflow-hidden">
+        <AvatarVideo />
+      </div>
     </div>
   );
 }
